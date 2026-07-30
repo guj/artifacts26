@@ -75,11 +75,15 @@ See `warpx_tests_INDEX.md` for which input dir each paper figure uses.
 
 Filled under `results/` (Table 1 + Figs. BTD-a..d). See `results/README.md`.
 
+## Artifact repository
+
+Primary link: https://github.com/guj/artifacts26  
+(recorded as \(A_1\) in `ad/sc26_ad.tex`)
+
 ## What to drop in next
 
-1. GitHub/GitLab URL (private OK for AD) → update `ad/sc26_ad.tex` artifact link \(A_1\)
-2. Push this `artifacts/` tree to that repo
-3. Compile AD: `cd ad && pdflatex sc26_ad.tex` and upload the PDF
+1. Push this `artifacts/` tree contents to that repo (if not already)
+2. Compile AD: `cd ad && pdflatex sc26_ad.tex` and upload the PDF
 
 ## AD vs AE
 
