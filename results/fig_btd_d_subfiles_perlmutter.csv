@@ -1,0 +1,7 @@
+# Fig. BTD-d — Perlmutter N=8 (32 ranks): throughput vs number of subfiles (GB/s)
+NumSubFiles,DSB,EWS,TLS
+32,2.106,2.06,2.063
+16,2.007,1.378,1.072
+8,2.155,0.712,0.673
+4,1.447,0.712,0.673
+2,1.022,0.718,0.67

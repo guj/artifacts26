@@ -1,0 +1,9 @@
+# Fig. BTD-c — Perlmutter: aggregation strategies, one subfile/rank (GB/s)
+# DSB = DataSizeBased; EWS = EveryoneWritesSerial; TLS = TwoLevelShm
+nodes,EWS,TLS,DSB
+8,2.06,2.063,2.106
+16,2.294,2.308,2.288
+32,2.36,2.329,2.358
+64,2.368,2.356,2.373
+128,2.333,2.326,2.342
+256,2.32,2.291,2.318

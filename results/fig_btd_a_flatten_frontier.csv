@@ -1,0 +1,8 @@
+# Fig. BTD-a — Frontier: EWS vs EWS-FlattenSteps (GB/s)
+nodes,EWS,EWS_Flatten
+8,3.11,3.05
+16,3.38,3.25
+32,3.3,3.32
+64,3.15,3.41
+128,3.82,3.7
+256,3.95,3.95

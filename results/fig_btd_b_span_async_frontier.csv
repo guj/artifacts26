@@ -1,0 +1,6 @@
+# Fig. BTD-b — Frontier: Default / SPAN / SPAN+AsyncWrite (GB/s)
+nodes,Default,SPAN,SPAN_AsyncWrite
+16,0.83,3.77,12.47
+64,1.67,3.83,11.13
+128,1.57,3.84,6.27
+256,1.42,3.46,6.5

@@ -1,0 +1,11 @@
+# Nodes,EWS,TLS,EWS-Blosc,TLS-Blosc
+# Frontier 3D Cartesian aggregate write throughput (TB/s), from paper Table 1.
+# Blosc columns are application-level effective bandwidth (uncompressed bytes / I/O time).
+16,0.055,0.090,0.085,0.082
+32,0.106,0.165,0.161,0.154
+64,0.176,0.208,0.307,0.254
+128,0.237,0.370,0.630,0.478
+256,0.565,0.680,1.202,1.150
+512,1.328,2.002,1.964,1.983
+1024,1.648,3.040,3.878,4.304
+2048,2.885,3.639,7.026,4.422
