@@ -1,8 +1,9 @@
 # Analysis / job scripts
 
 **Frontier is the primary documented platform.** Perlmutter is analogous (same
-WarpX → openPMD-api → ADIOS2 flow); only modules, account/QOS, and scratch paths
-differ — no separate Perlmutter script tree is required.
+WarpX → openPMD-api → ADIOS2 flow). Example Perlmutter Slurm scripts are under
+`warpx_tests/PerformanceRun/` (e.g. `BTD/N8/perlmutter.sh`); adapt modules,
+account/QOS, and scratch paths as needed.
 
 ## Frontier build / env
 

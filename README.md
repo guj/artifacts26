@@ -44,7 +44,7 @@ ADIOS2 features exercised: `TwoLevelShm`, `EveryoneWritesSerial`, `DataSizeBased
 ## Platforms
 
 - **Primary documented platform: Frontier (ORNL)** — Lustre/ClusterStor ORION; weak scaling up to 2048 nodes. Setup and job scripts in this tree target Frontier.
-- **Perlmutter (NERSC)** — all-flash Lustre scratch; weak scaling up to 512 nodes. Uses the same WarpX → openPMD-api → ADIOS2 stack and job pattern; only site modules, account/QOS, and scratch paths differ. A full second script tree is not provided.
+- **Perlmutter (NERSC)** — all-flash Lustre scratch; weak scaling up to 512 nodes. Same WarpX → openPMD-api → ADIOS2 stack; example Slurm scripts live under `warpx_tests/PerformanceRun/` (e.g. `BTD/N8/perlmutter.sh`) — adapt modules, account/QOS, and scratch paths as needed.
 
 Absolute TB/s depends on shared-filesystem load and will differ across platforms and days. Reproducible claims emphasize **relative configuration rankings** and the measurement methodology in the paper.
 

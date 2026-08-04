@@ -119,7 +119,8 @@ Absolute TB/s on production Lustre is not expected to be bit-identical across da
         4 CPU cores/node for I/O.
         Uses the same WarpX~$\rightarrow$~openPMD-api~$\rightarrow$~ADIOS2 stack and job
         pattern as Frontier; only site modules, account/QOS, and scratch paths differ.
-        A separate Perlmutter script tree is not provided.
+        Example Slurm scripts are in \texttt{warpx\_tests/PerformanceRun/}
+        (e.g.\ \texttt{BTD/N8/perlmutter.sh}); adapt as needed for other scales.
 \end{itemize}
 Node-local NVMe burst buffers were explored for BTD staging but are not required
 to regenerate the primary CSV/plot artifacts.
@@ -205,8 +206,9 @@ Frontier is the documented build/run host. Choose a scratch working directory
   \item Aggregate times and sizes into \texttt{results/*.csv}; replot by importing
         CSVs into Google Sheets and exporting charts.
 \end{enumerate}
-Perlmutter uses the same stack and \texttt{inputs\_3d/}; only site modules,
-account/QOS, and scratch paths differ (\texttt{PerformanceRun/BTD/.../perlmutter.sh}).
+Perlmutter uses the same stack and \texttt{inputs\_3d/}; start from the example
+scripts under \texttt{PerformanceRun/} (e.g.\ \texttt{BTD/N8/perlmutter.sh}) and
+adjust account/QOS, modules, and scratch paths.
 
 \artcomp
 Workflow: $T_1$ build/load stack $\rightarrow$ $T_2$ run WarpX configs
