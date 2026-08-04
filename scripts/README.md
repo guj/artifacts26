@@ -17,11 +17,10 @@ source frontier/bash.setup.env
 ./frontier/build.setup
 ```
 
-## Still TODO
+## Log → CSV path
 
-- `parse_warpx_timers.py` — extract I/O and nullcore wall times → CSV
-- `make_table1.py` — regenerate Frontier 3D throughput table
-- `plot_btd_*.py` — regenerate BTD figures
-- `submit_frontier.sh` — sanitized Frontier job template
-
-Keep a small “smoke” path (1–8 nodes) documented in comments.
+Use [`frontier/extract_time_3.6.py`](frontier/extract_time_3.6.py) to pull
+**TotalTime** and **IOTime** from WarpX job logs. `cd` to the parent of
+`job_id/`, then `python3 frontier/extract_time_3.6.py job_id` (no trailing
+slash). Details in `frontier/README.md`. Aggregate into `../results/*.csv`;
+figures via Google Sheets (`../results/README.md`).

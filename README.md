@@ -14,6 +14,7 @@ artifacts/
   README.md
   warpx_tests/              # copy of inputs + PerformanceRun scripts
   warpx_tests_INDEX.md      # paper ↔ directory map
+  repeat/                   # same runs, organized for ×3 small-N repeats
   configs/                  # pointers into warpx_tests (no duplicate decks)
   scripts/frontier/         # bash.setup.env + build.setup (WORKDIR-based)
   results/                  # numerical results underlying tables/figures
@@ -26,6 +27,7 @@ artifacts/
 |---|---|
 | `warpx_tests/inputs_3d/` | All WarpX inputs (balanced 3D **and** BTD) |
 | `warpx_tests/PerformanceRun/` | Frontier Slurm scripts (plus some Perlmutter) |
+| `repeat/` | Same style of batch scripts, grouped by config (`bp`, `bp_async`, …); **submit each script 3×** for the paper’s small-N repeats — see `repeat/README.md` |
 | `scripts/frontier/` | Module env + software build into `$WORKDIR` |
 ## Software versions (from paper §3)
 
@@ -74,6 +76,10 @@ See `warpx_tests_INDEX.md` for which input dir each paper figure uses.
 ## Results CSVs
 
 Filled under `results/` (Table 1 + Figs. BTD-a..d). See `results/README.md`.
+
+- **Logs → times:** from the parent of `job_id/`, run `python3 scripts/frontier/extract_time_3.6.py job_id` (bare id, no `/`).
+- **DataSize:** aggregate output file size observed from each run (on-disk).
+- **Figures:** import CSVs into **Google Sheets** and export charts (no plotting scripts in this tree).
 
 ## Artifact repository
 

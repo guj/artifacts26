@@ -47,3 +47,10 @@ INPUTS=${pwd}/../../../inputs_3d/opmd/regular_blosc/input.n${SLURM_NNODES}
 ```
 
 Replace `#SBATCH -A YOUR_PROJECT` with your OLCF/NERSC allocation before submitting.
+
+## Three-trial repeats (`../repeat/`)
+
+For the small-\(N\) ×3 campaign summarized in `results/repeat_*.csv`, use the
+scripts under [`../repeat/`](../repeat/) (e.g. `BTD/N8/bp_async/`). These are the
+same class of runs as `PerformanceRun/`, regrouped by config; submit **each
+script three times**. Details: `../repeat/README.md`.

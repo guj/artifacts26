@@ -49,22 +49,22 @@ Appendix: Artifact Description\\
 
 \begin{description}
 \item[$A_1$] \url{https://github.com/guj/artifacts26}\\
-  Git repository containing Frontier build/env scripts, WarpX inputs and
-  PerformanceRun job scripts, and result CSVs corresponding to this paper.
+  Git repository containing Frontier build/env scripts, WarpX inputs,
+  PerformanceRun and \texttt{repeat/} job scripts, log timer extractor,
+  and result CSVs corresponding to this paper.
   (Optional Zenodo DOI may be added after acceptance for badge applications.)
 \end{description}
 
 \begin{center}
-\begin{tabular}{rll}
+\small
+\begin{tabular}{@{}c@{\hspace{0.8em}}c@{\hspace{0.8em}}p{0.52\columnwidth}@{}}
 \toprule
-Artifact ID  &  Contributions &  Related \\
-             &  Supported     &  Paper Elements \\
+Artifact & Contrib. & Related paper elements \\
 \midrule
-$A_1$   &  $C_1$ & Table~1 (Frontier 3D throughput) \\
-        &  $C_2$ & Figs.~BTD aggregation (Perlmutter) \\
-        &  $C_3$ & Fig.~FlattenSteps vs.\ EWS \\
-        &  $C_4$ & Fig.~SPAN / AsyncWrite \\
-        &  $C_5$ & Discussion recommendations \\
+$A_1$ & $C_1$--$C_5$ &
+  Table~1; Figs.~BTD-a (FlattenSteps), BTD-b (SPAN/Async),
+  BTD-c/d (aggregation); small-$N$ mean$\pm$stdev (\S II-B, \S4);
+  \S6 recommendations \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -76,11 +76,12 @@ $A_1$   &  $C_1$ & Table~1 (Frontier 3D throughput) \\
 \newartifact
 
 \artrel
-Artifact $A_1$ packages the experiment inputs, ADIOS2 parameterizations, and
-numerical results used to produce the paper's throughput tables and BTD figures.
-It supports independent replotting of reported results and (where allocations
-permit) re-execution of the same WarpX~$\rightarrow$~openPMD-api~$\rightarrow$~ADIOS2
-write path.
+Artifact $A_1$ packages the experiment inputs, ADIOS2 parameterizations,
+\texttt{repeat/} scripts for small-$N$ three-trial runs, the log timer extractor,
+and numerical results used to produce the paper's throughput tables and BTD
+figures. It supports independent replotting from CSVs (Google Sheets) and
+(where allocations permit) re-execution of the same
+WarpX~$\rightarrow$~openPMD-api~$\rightarrow$~ADIOS2 write path.
 
 \artexp
 Reproducing $A_1$ should recover:
@@ -136,23 +137,33 @@ to regenerate the primary CSV/plot artifacts.
         (optional \texttt{ccache}, \texttt{ninja})
   \item Lossless Blosc2 via ADIOS2 operator (\texttt{zstd} level~1, bit-shuffle,
         2048-byte threshold, 6 threads/rank) as in the paper table caption
-  \item Python~3 + matplotlib/pandas (or equivalent) for CSV$\rightarrow$figure scripts
+  \item Python~3.6+ for \texttt{scripts/frontier/extract\_time\_3.6.py}
+        (TotalTime / IOTime from job logs)
+  \item Google Sheets (or equivalent) to import \texttt{results/*.csv} and export
+        paper figures --- no matplotlib drivers are shipped
 \end{itemize}
 
 \artinpart{Datasets / Inputs}
-No external observational datasets. All WarpX decks and Slurm scripts are in
-\texttt{warpx\_tests/}:
+No external observational datasets. WarpX decks and primary Slurm scripts are in
+\texttt{warpx\_tests/}; small-$N$ three-trial scripts are in \texttt{repeat/}:
 \begin{itemize}
-  \item \texttt{inputs\_3d/opmd/regular/}, \texttt{regular\_blosc/}:
+  \item \texttt{inputs\_3d/opmd/regular/}, \texttt{regular\_blosc/}, \texttt{regular\_h5/}:
         balanced 3D Cartesian LWFA weak scaling
         ($\approx$33M cells/node; field-dominated $\approx$2.5~GB/node/step).
   \item \texttt{inputs\_3d/opmd/btd\_*/}, \texttt{btd\_flatten*/}:
         boosted-frame BTD (skew + out-of-order arrival; FlattenSteps variants).
   \item \texttt{PerformanceRun/3D/}, \texttt{PerformanceRun/BTD/}:
         Frontier job scripts (plus \texttt{BTD/.../perlmutter.sh}).
+  \item \texttt{repeat/}: same job pattern, regrouped by config
+        (\texttt{bp/}, \texttt{bp\_async/}, \texttt{bp\_flatten/}, \texttt{h5/});
+        submit each script three times for the paper's $N{=}8$--$32$ repeats
+        (see \texttt{repeat/README.md}).
   \item \texttt{PerformanceRun/SST\_BTD/}: exploratory staging (secondary).
 \end{itemize}
 Per-scale decks use \texttt{input.n\$\{NNODES\}}.
+Scripts under \texttt{repeat/} resolve \texttt{EXE}, \texttt{bpls}, and
+\texttt{inputs\_3d} relative to \texttt{warpx\_tests/} (set
+\texttt{\#SBATCH -A YOUR\_PROJECT}).
 Aggregated numbers used for the paper plots/tables are in \texttt{results/}:
 \begin{itemize}
   \item \texttt{frontier\_3d\_throughput.csv} --- Table~1 (TB/s)
@@ -160,8 +171,11 @@ Aggregated numbers used for the paper plots/tables are in \texttt{results/}:
   \item \texttt{fig\_btd\_b\_span\_async\_frontier.csv} --- Fig.~BTD-b (GB/s)
   \item \texttt{fig\_btd\_c\_agg\_perlmutter.csv} --- Fig.~BTD-c (GB/s)
   \item \texttt{fig\_btd\_d\_subfiles\_perlmutter.csv} --- Fig.~BTD-d (GB/s)
+  \item \texttt{repeat\_runs\_raw.csv}, \texttt{repeat\_summary.csv} ---
+        three-trial TotalTime/IOTime (mean$\pm$stdev)
 \end{itemize}
-See \texttt{warpx\_tests\_INDEX.md} and \texttt{results/README.md} in the artifact repository.
+See \texttt{warpx\_tests\_INDEX.md}, \texttt{repeat/README.md}, and
+\texttt{results/README.md} in the artifact repository.
 
 \artinpart{Installation and Deployment}
 Frontier is the documented build/run host. Choose a scratch working directory
@@ -180,34 +194,36 @@ Frontier is the documented build/run host. Choose a scratch working directory
         \texttt{\#SBATCH -A} to your allocation.
   \item Submit, e.g.\ \texttt{sbatch PerformanceRun/3D/N1/frontier\_blosc.sh} or
         \texttt{sbatch PerformanceRun/BTD/N8/frontier.sh}.
-        Scripts select inputs via relative paths into \texttt{inputs\_3d/opmd/...}.
-  \item Record wall-clock with I/O enabled vs.\ nullcore (Option~1 in the paper);
-        optionally cross-check \texttt{WriteToFile}; parse logs into \texttt{results/}.
+        For small-$N$ repeats: from \texttt{repeat/...}, submit each script three
+        times (same inputs/pattern as \texttt{PerformanceRun/}).
+  \item From the parent of each \texttt{job\_id/} directory, run
+        \texttt{python3 scripts/frontier/extract\_time\_3.6.py job\_id}
+        (bare job id, no trailing slash) to obtain TotalTime and IOTime.
+        Option~1 I/O time is $\mathrm{TotalTime}_{\mathrm{I/O}}-\mathrm{TotalTime}_{\mathrm{nullcore}}$
+        when nullcore runs are available; \textbf{DataSize} is the aggregate
+        on-disk output file size observed from each run.
+  \item Aggregate times and sizes into \texttt{results/*.csv}; replot by importing
+        CSVs into Google Sheets and exporting charts.
 \end{enumerate}
 Perlmutter uses the same stack and \texttt{inputs\_3d/}; only site modules,
 account/QOS, and scratch paths differ (\texttt{PerformanceRun/BTD/.../perlmutter.sh}).
 
 \artcomp
-Workflow:
-\[
-T_1\ \text{(build/load stack)}
-\ \rightarrow\
-T_2\ \text{(run WarpX configs)}
-\ \rightarrow\
-T_3\ \text{(parse timers $\rightarrow$ CSV)}
-\ \rightarrow\
-T_4\ \text{(tables/figures)}.
-\]
+Workflow: $T_1$ build/load stack $\rightarrow$ $T_2$ run WarpX configs
+$\rightarrow$ $T_3$ \texttt{extract\_time\_3.6.py} plus observed file sizes into CSV
+$\rightarrow$ $T_4$ Google Sheets tables/figures.
 Parameters of interest: node count (weak scaling), aggregation method,
 \texttt{NumSubFiles}, FlattenSteps on/off, SPAN on/off, AsyncWrite on/off,
-Blosc2 on/off. Large-scale runs were generally single-trial; reliability is argued
-via cross-scale consistency (paper §3).
+Blosc2 on/off. Selected Frontier configs at $N{=}8$--$32$ were repeated three
+times (\texttt{repeat/}); larger scales and Blosc remain single-trial, with
+reliability argued via cross-scale consistency (paper §3).
 
 \artout
 \begin{itemize}
-  \item CSV tables of aggregate write throughput (TB/s) vs.\ node count.
+  \item CSV tables of aggregate write throughput (TB/s) vs.\ node count, plus
+        small-$N$ repeat summaries (mean$\pm$stdev).
   \item Plots corresponding to BTD FlattenSteps, SPAN/AsyncWrite, and aggregation
-        studies.
+        studies (recreated from CSVs in Google Sheets).
   \item Comparison against paper Table~1 and BTD figures: match relative trends;
         document filesystem contention / re-runs as in the paper Limitations.
 \end{itemize}

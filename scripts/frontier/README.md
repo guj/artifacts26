@@ -30,3 +30,31 @@ $WORKDIR/
   build/{adios,openPMD,warpx}
   src/{adios,openPMD,warpx}
 ```
+
+## Log → times (`extract_time_3.6.py`)
+
+After a Slurm job finishes, extract **TotalTime** (wall) and **IOTime** (largest
+`WriteToFile` “to” time in the WarpX timer dump) from job logs.
+
+Go to the **parent** directory that contains the data folder named after the
+job id (e.g. `5130062/`), then run with the bare job id (**no trailing slash**):
+
+```bash
+cd /path/to/parent          # contains job_id/ as a subdirectory
+python3 /path/to/artifacts/scripts/frontier/extract_time_3.6.py job_id
+# example:
+#   cd .../runs
+#   python3 extract_time_3.6.py 5130062
+```
+
+Optional: `python3 extract_time_3.6.py job_id --root /path/to/parent` if you
+are not already in that parent directory.
+
+Expects layout `<parent>/<job_id>/<encoding>_<job_id>_<type>_<numNodes>n/outs/output.*`.
+Prints a table: `jobid`, `type`, `BPEngine_Agg`, `numNodes`, `TotalTime`, `IOTime`.
+
+Paper Option‑1 I/O time is then `TotalTime(I/O run) − TotalTime(nullcore)` when
+nullcore jobs are available; `IOTime` is the isolated WriteToFile cross-check.
+**DataSize** for throughput is the aggregate **file size observed from each
+run** (on-disk output for that step). Combine times + observed sizes into the
+CSVs under `../../results/` for Google Sheets plots.

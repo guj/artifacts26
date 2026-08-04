@@ -2,12 +2,15 @@
 
 Fill/update `sc26_ad.tex`, especially the **TODO** artifact URL/DOI.
 
-Compile (requires `pdflatex`):
+Compile (either engine works):
 
 ```bash
 cd artifacts/ad
-pdflatex sc26_ad.tex
+tectonic sc26_ad.tex    # lightweight; installed via: brew install tectonic
+# or: pdflatex sc26_ad.tex
 ```
+
+Output: `sc26_ad.pdf`
 
 Vendored for offline build: `IEEEtran.cls`, `sc26repro.sty`, local `tagging.sty` stub.
 
