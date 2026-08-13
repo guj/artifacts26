@@ -10,7 +10,7 @@ account/QOS, and scratch paths as needed.
 See [`frontier/`](frontier/):
 
 - `bash.setup.env` — Frontier modules + GPU flags; requires `WORKDIR`
-- `build.setup` — builds ADIOS2, openPMD-api, WarpX into `$WORKDIR`
+- `build.setup` — builds ADIOS2 and WarpX (bundled openPMD-api) into `$WORKDIR`
 
 ```bash
 export WORKDIR=/lustre/orion/<project>/scratch/<user>/<exp>

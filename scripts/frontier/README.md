@@ -18,17 +18,19 @@ After a successful build, re-source `bash.setup.env` in new shells before runnin
 - `WORKDIR` is required (env var or first argument).
 - Clones use **upstream** repos (not personal forks):
   - ADIOS2 → `ornladios/ADIOS2` (default tag `v2.11.0`)
-  - openPMD-api → `openPMD/openPMD-api` (default tag `0.16.1`)
-  - WarpX → `BLAST-WarpX/warpx` (default tag `25.12`)
-- Override tags: `ADIOS2_TAG=... OPENPMD_TAG=... WARPX_TAG=... ./build.setup`
+  - WarpX → `BLAST-WarpX/warpx` (default tag `25.12`), with **bundled**
+    openPMD-api (`WarpX_openpmd_internal=ON`) as in the paper
+- Override tags: `ADIOS2_TAG=... WARPX_TAG=... ./build.setup`
+- To build ADIOS2 with Blosc (Table I), add `-DADIOS2_USE_Blosc2=ON` to the
+  ADIOS2 `cmake` line in `build.setup` (needs a c-blosc2 install).
 
 ## Layout created under `$WORKDIR`
 
 ```text
 $WORKDIR/
-  binary/{adios,openPMD-api,warpx}
-  build/{adios,openPMD,warpx}
-  src/{adios,openPMD,warpx}
+  binary/{adios,warpx}
+  build/{adios,warpx}
+  src/{adios,warpx}
 ```
 
 ## Log → times (`extract_time_3.6.py`)

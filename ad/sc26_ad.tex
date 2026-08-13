@@ -5,8 +5,12 @@
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{booktabs}
+\usepackage{enumitem}
 \usepackage{hyperref}
 \usepackage{sc26repro}
+
+\setlist{nosep,leftmargin=*}
+\setlist[description]{nosep,leftmargin=1.6em,font=\normalfont\itshape}
 
 % Final submission: do NOT enable explanation/example tags.
 % \usetag{explanation}
@@ -33,38 +37,36 @@ Appendix: Artifact Description\\
 \subsection{Paper's Main Contributions}
 
 \begin{description}
-\item[$C_1$] Balanced-workload write-path characterization on Frontier and Perlmutter
-  (weak scaling; multi-TB/s aggregate throughput, including Blosc2 effective bandwidth).
-\item[$C_2$] Comparison of ADIOS2 aggregation strategies
-  (\texttt{TwoLevelShm}, \texttt{EveryoneWritesSerial}, \texttt{DataSizeBased})
-  under extreme writer-side skew.
-\item[$C_3$] Evaluation of \texttt{FlattenSteps} for assembling lab-frame BTD snapshots
-  from non-contiguous boosted-frame contributions at negligible write-time overhead.
-\item[$C_4$] Evaluation of \texttt{SPAN} and \texttt{AsyncWrite} for buffering and
-  compute/I/O overlap under BTD imbalance.
+\item[$C_1$] Balanced-workload write-path characterization on Frontier and
+  Perlmutter (weak scaling; multi-TB/s, including Blosc2).
+\item[$C_2$] ADIOS2 aggregation (\texttt{TwoLevelShm}, \texttt{EveryoneWritesSerial},
+  \texttt{DataSizeBased}) under extreme writer-side skew.
+\item[$C_3$] \texttt{FlattenSteps} for lab-frame BTD snapshots from non-contiguous
+  boosted-frame data at negligible write-time overhead.
+\item[$C_4$] \texttt{SPAN} and \texttt{AsyncWrite} for buffering and compute/I/O
+  overlap under BTD imbalance.
 \item[$C_5$] Practical ADIOS2 configuration guidelines for WarpX-like PIC codes.
 \end{description}
 
 \subsection{Computational Artifacts}
 
 \begin{description}
-\item[$A_1$] \url{https://github.com/guj/artifacts26}\\
-  Git repository containing Frontier build/env scripts, WarpX inputs,
-  PerformanceRun and \texttt{repeat/} job scripts, log timer extractor,
-  and result CSVs corresponding to this paper.
-  (Optional Zenodo DOI may be added after acceptance for badge applications.)
+\item[$A_1$] \url{https://github.com/guj/artifacts26} ---
+  Frontier build/env scripts, WarpX inputs, PerformanceRun and \texttt{repeat/}
+  jobs, log timer extractor, and result CSVs.
+  (Optional Zenodo DOI may be added after acceptance.)
 \end{description}
 
 \begin{center}
 \small
-\begin{tabular}{@{}c@{\hspace{0.8em}}c@{\hspace{0.8em}}p{0.52\columnwidth}@{}}
+\begin{tabular}{@{}c@{\hspace{0.6em}}c@{\hspace{0.6em}}p{0.55\columnwidth}@{}}
 \toprule
-Artifact & Contrib. & Related paper elements \\
+Art. & Contrib. & Related paper elements \\
 \midrule
 $A_1$ & $C_1$--$C_5$ &
-  Table~1; Figs.~BTD-a (FlattenSteps), BTD-b (SPAN/Async),
-  BTD-c/d (aggregation); small-$N$ mean$\pm$stdev (\S II-B, \S4);
-  \S6 recommendations \\
+  Table~I; Fig.~2 (Perlmutter 3D); Figs.~3--6 (BTD);
+  small-$N$ mean$\pm$stdev (\S II-B, \S III-C, \S IV-B);
+  \S VI-B recommendations \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -76,51 +78,44 @@ $A_1$ & $C_1$--$C_5$ &
 \newartifact
 
 \artrel
-Artifact $A_1$ packages the experiment inputs, ADIOS2 parameterizations,
-\texttt{repeat/} scripts for small-$N$ three-trial runs, the log timer extractor,
-and numerical results used to produce the paper's throughput tables and BTD
-figures. It supports independent replotting from CSVs (Google Sheets) and
-(where allocations permit) re-execution of the same
-WarpX~$\rightarrow$~openPMD-api~$\rightarrow$~ADIOS2 write path.
+$A_1$ packages inputs, ADIOS2 parameterizations, \texttt{repeat/} scripts,
+the log timer extractor, and CSVs for Table~I and Figs.~2--6.
+It supports replotting from CSVs and, where allocations permit, re-execution
+of the WarpX~$\rightarrow$~openPMD-api~$\rightarrow$~ADIOS2 write path.
 
 \artexp
-Reproducing $A_1$ should recover:
 \begin{itemize}
-  \item The Frontier 3D Cartesian throughput table (EWS/TLS $\pm$ Blosc2) to within
-        normal shared-filesystem variation; relative ordering of configurations
-        is the primary claim.
-  \item BTD relative rankings: \texttt{FlattenSteps} overhead negligible vs.\ EWS;
-        \texttt{SPAN}+\texttt{AsyncWrite} highest among tested BTD configs;
+  \item Table~I (Frontier 3D; EWS/TLS $\pm$ Blosc2): relative ordering is the
+        primary claim; absolute TB/s varies with Lustre contention.
+  \item Fig.~2 (Perlmutter 3D): TLS above EWS; aggregate $>$1~TB/s at 512 nodes.
+  \item BTD: \texttt{FlattenSteps} overhead negligible vs.\ EWS;
+        \texttt{SPAN}+\texttt{AsyncWrite} highest among tested configs;
         \texttt{DataSizeBased} preferred when subfile count is constrained under skew.
 \end{itemize}
-Absolute TB/s on production Lustre is not expected to be bit-identical across days.
 
 \arttime
 \begin{itemize}
-  \item \textbf{Setup:} 30--120~min (build WarpX/ADIOS2 stack or load site modules).
-  \item \textbf{Small-scale smoke test} (1--8 nodes): on the order of tens of minutes
-        per configuration (site-dependent).
-  \item \textbf{Analysis / replot from CSVs:} $<$15~min.
-  \item \textbf{Full paper scale} (up to 2048 Frontier / 512 Perlmutter nodes):
-        requires leadership-class allocations; not expected for routine AE.
+  \item \textbf{Setup:} 30--120~min (build stack or load site modules).
+  \item \textbf{Execution:} $\approx$1--2~min compute at 8 nodes (Slurm 5--10~min);
+        queue wait is site-dependent. Full scale (2048 Frontier / 512 Perlmutter
+        nodes) needs a leadership allocation and terabytes of scratch
+        (Fig.~2: a 128-node Perlmutter 3D step is already $\approx$10~TB).
+  \item \textbf{Analysis:} $<$15~min to import CSVs and replot in Google Sheets.
 \end{itemize}
 
 \artin
 
 \artinpart{Hardware}
 \begin{itemize}
-  \item Frontier (ORNL): HPE Cray EX; AMD MI250X GPUs; Lustre/ClusterStor ORION
-        ($\approx$5~TB/s peak write). Weak scaling reported to 2048 nodes;
-        8 CPU cores/node dedicated to I/O in the paper.
-        \textbf{Primary documented platform:} setup and job scripts in the artifact
-        repository target Frontier.
-  \item Perlmutter (NERSC): GPU nodes; all-flash Lustre scratch ($>$5~TB/s aggregate).
-        Weak scaling reported to 512 nodes (scratch-quota limited);
-        4 CPU cores/node for I/O.
-        Uses the same WarpX~$\rightarrow$~openPMD-api~$\rightarrow$~ADIOS2 stack and job
-        pattern as Frontier; only site modules, account/QOS, and scratch paths differ.
-        Example Slurm scripts are in \texttt{warpx\_tests/PerformanceRun/}
-        (e.g.\ \texttt{BTD/N8/perlmutter.sh}); adapt as needed for other scales.
+  \item Frontier (ORNL; primary documented platform): HPE Cray EX; AMD MI250X;
+        Lustre/ClusterStor ORION ($\approx$5~TB/s peak write); weak scaling to
+        2048 nodes; 8 CPU cores/node for I/O. Setup and job scripts in the repo
+        target Frontier.
+  \item Perlmutter (NERSC): GPU nodes; all-flash Lustre ($>$5~TB/s); weak scaling
+        to 512 nodes (scratch-quota limited); 4 CPU cores/node for I/O.
+        Same WarpX~$\rightarrow$~openPMD-api~$\rightarrow$~ADIOS2 stack; only
+        modules, account/QOS, and scratch paths differ.
+        Example: \texttt{warpx\_tests/PerformanceRun/BTD/N8/perlmutter.sh}.
 \end{itemize}
 Node-local NVMe burst buffers were explored for BTD staging but are not required
 to regenerate the primary CSV/plot artifacts.
@@ -128,110 +123,93 @@ to regenerate the primary CSV/plot artifacts.
 \artinpart{Software}
 \begin{itemize}
   \item WarpX 25.12 (\url{https://github.com/BLAST-WarpX/warpx})
-  \item openPMD-api (external install; linked into WarpX with
-        \texttt{WarpX\_openpmd\_internal=OFF})
-  \item ADIOS2 2.11, BPFile engine / BP5
-        (\url{https://github.com/ornladios/ADIOS2})
-  \item Frontier modules used by \texttt{scripts/frontier/bash.setup.env}:
+  \item openPMD-api bundled with that WarpX build
+        (\url{https://github.com/openPMD/openPMD-api})
+  \item ADIOS2 2.11, BPFile / BP5 (\url{https://github.com/ornladios/ADIOS2})
+  \item Frontier modules (\texttt{scripts/frontier/bash.setup.env}):
         \texttt{cmake/3.30.5}, \texttt{craype-accel-amd-gfx90a}, \texttt{rocm},
         \texttt{cray-mpich/8.1.31}, \texttt{cce/18.0.1}, \texttt{hdf5/1.14.5-mpi}
         (optional \texttt{ccache}, \texttt{ninja})
-  \item Lossless Blosc2 via ADIOS2 operator (\texttt{zstd} level~1, bit-shuffle,
-        2048-byte threshold, 6 threads/rank) as in the paper table caption
-  \item Python~3.6+ for \texttt{scripts/frontier/extract\_time\_3.6.py}
-        (TotalTime / IOTime from job logs)
-  \item Google Sheets (or equivalent) to import \texttt{results/*.csv} and export
-        paper figures --- no matplotlib drivers are shipped
+  \item Lossless Blosc2 via ADIOS2 (\texttt{zstd} level~1, bit-shuffle,
+        2048-byte threshold, 6 threads/rank)
+  \item Python~3.6+ for \texttt{scripts/frontier/extract\_time\_3.6.py};
+        Google Sheets to import \texttt{results/*.csv} (no matplotlib drivers)
 \end{itemize}
 
 \artinpart{Datasets / Inputs}
-No external observational datasets. WarpX decks and primary Slurm scripts are in
-\texttt{warpx\_tests/}; small-$N$ three-trial scripts are in \texttt{repeat/}:
-\begin{itemize}
-  \item \texttt{inputs\_3d/opmd/regular/}, \texttt{regular\_blosc/}, \texttt{regular\_h5/}:
-        balanced 3D Cartesian LWFA weak scaling
-        ($\approx$33M cells/node; field-dominated $\approx$2.5~GB/node/step).
-  \item \texttt{inputs\_3d/opmd/btd\_*/}, \texttt{btd\_flatten*/}:
-        boosted-frame BTD (skew + out-of-order arrival; FlattenSteps variants).
-  \item \texttt{PerformanceRun/3D/}, \texttt{PerformanceRun/BTD/}:
-        Frontier job scripts (plus \texttt{BTD/.../perlmutter.sh}).
-  \item \texttt{repeat/}: same job pattern, regrouped by config
-        (\texttt{bp/}, \texttt{bp\_async/}, \texttt{bp\_flatten/}, \texttt{h5/});
-        submit each script three times for the paper's $N{=}8$--$32$ repeats
-        (see \texttt{repeat/README.md}).
-  \item \texttt{PerformanceRun/SST\_BTD/}: exploratory staging (secondary).
-\end{itemize}
-Per-scale decks use \texttt{input.n\$\{NNODES\}}.
+No external observational datasets. Decks and Slurm scripts live in
+\texttt{warpx\_tests/}; three-trial scripts in \texttt{repeat/}.
+Per-scale decks: \texttt{input.n\$\{NNODES\}}.
 Scripts under \texttt{repeat/} resolve \texttt{EXE}, \texttt{bpls}, and
 \texttt{inputs\_3d} relative to \texttt{warpx\_tests/} (set
 \texttt{\#SBATCH -A YOUR\_PROJECT}).
-Aggregated numbers used for the paper plots/tables are in \texttt{results/}:
 \begin{itemize}
-  \item \texttt{frontier\_3d\_throughput.csv} --- Table~1 (TB/s)
-  \item \texttt{fig\_btd\_a\_flatten\_frontier.csv} --- Fig.~BTD-a (GB/s)
-  \item \texttt{fig\_btd\_b\_span\_async\_frontier.csv} --- Fig.~BTD-b (GB/s)
-  \item \texttt{fig\_btd\_c\_agg\_perlmutter.csv} --- Fig.~BTD-c (GB/s)
-  \item \texttt{fig\_btd\_d\_subfiles\_perlmutter.csv} --- Fig.~BTD-d (GB/s)
-  \item \texttt{repeat\_runs\_raw.csv}, \texttt{repeat\_summary.csv} ---
-        three-trial TotalTime/IOTime (mean$\pm$stdev)
+  \item \texttt{inputs\_3d/opmd/regular/}, \texttt{regular\_blosc/},
+        \texttt{regular\_h5/}: 3D Cartesian LWFA
+        ($\approx$33M cells/node; $\approx$2.5~GB/node/step).
+  \item \texttt{inputs\_3d/opmd/btd\_*/}, \texttt{btd\_flatten*/}: BTD
+        (skew + out-of-order; FlattenSteps variants).
+  \item \texttt{PerformanceRun/3D/}, \texttt{PerformanceRun/BTD/}: Frontier
+        jobs (plus \texttt{BTD/.../perlmutter.sh});
+        \texttt{SST\_BTD/} is exploratory.
+  \item \texttt{repeat/}: same pattern, by config
+        (\texttt{bp/}, \texttt{bp\_async/}, \texttt{bp\_flatten/}, \texttt{h5/});
+        submit each script three times for $N{=}8$--$32$
+        (\texttt{repeat/README.md}).
 \end{itemize}
-See \texttt{warpx\_tests\_INDEX.md}, \texttt{repeat/README.md}, and
-\texttt{results/README.md} in the artifact repository.
+Paper numbers are in \texttt{results/}:
+\texttt{frontier\_3d\_throughput.csv} (Table~I);
+\texttt{3D-perlmutter.csv} (Fig.~2);
+\texttt{fig\_btd\_a\_flatten\_frontier.csv} (Fig.~3);
+\texttt{fig\_btd\_b\_span\_async\_frontier.csv} (Fig.~4);
+\texttt{fig\_btd\_c\_agg\_perlmutter.csv} (Fig.~5);
+\texttt{fig\_btd\_d\_subfiles\_perlmutter.csv} (Fig.~6);
+\texttt{repeat\_runs\_raw.csv}, \texttt{repeat\_summary.csv}
+(mean$\pm$stdev). See \texttt{warpx\_tests\_INDEX.md},
+\texttt{repeat/README.md}, \texttt{results/README.md}.
 
 \artinpart{Installation and Deployment}
-Frontier is the documented build/run host. Choose a scratch working directory
-\texttt{WORKDIR} (no hard-coded user path) and run:
+Frontier is the documented host. Choose scratch \texttt{WORKDIR} (no hard-coded
+user path) and run:
 \begin{enumerate}
-  \item \texttt{export WORKDIR=/lustre/orion/<project>/scratch/<user>/<exp>}
+  \item \texttt{export WORKDIR=}\\
+        \texttt{/lustre/orion/<project>/scratch/<user>/<exp>}
   \item \texttt{source scripts/frontier/bash.setup.env}
-        (loads modules; sets \texttt{ADIOS2\_DIR}, \texttt{openPMD\_DIR},
-        \texttt{AMREX\_AMD\_ARCH=gfx90a}, GPU-aware MPI).
-  \item \texttt{./scripts/frontier/build.setup}
-        builds and installs ADIOS2~$\rightarrow$~openPMD-api~$\rightarrow$~WarpX
-        under \texttt{\$WORKDIR/binary/} (override tags with
-        \texttt{ADIOS2\_TAG}, \texttt{OPENPMD\_TAG}, \texttt{WARPX\_TAG}).
-  \item In \texttt{warpx\_tests/}, symlink \texttt{EXE} $\rightarrow$ WarpX binary and
-        \texttt{bpls} $\rightarrow$ ADIOS2 \texttt{bpls}; set
-        \texttt{\#SBATCH -A} to your allocation.
-  \item Submit, e.g.\ \texttt{sbatch PerformanceRun/3D/N1/frontier\_blosc.sh} or
-        \texttt{sbatch PerformanceRun/BTD/N8/frontier.sh}.
-        For small-$N$ repeats: from \texttt{repeat/...}, submit each script three
-        times (same inputs/pattern as \texttt{PerformanceRun/}).
-  \item From the parent of each \texttt{job\_id/} directory, run
+        (modules; \texttt{ADIOS2\_DIR}; \texttt{AMREX\_AMD\_ARCH=gfx90a};
+        GPU-aware MPI).
+  \item \texttt{./scripts/frontier/build.setup} builds ADIOS2~2.11 and
+        WarpX~25.12 under \texttt{\$WORKDIR/binary/} with bundled openPMD-api
+        (\texttt{WarpX\_openpmd\_internal=ON}).
+        Override with \texttt{ADIOS2\_TAG}, \texttt{WARPX\_TAG}.
+  \item In \texttt{warpx\_tests/}, symlink \texttt{EXE} $\rightarrow$ WarpX and
+        \texttt{bpls} $\rightarrow$ ADIOS2 \texttt{bpls}; set \texttt{\#SBATCH -A}.
+  \item Submit, e.g.\ \texttt{sbatch PerformanceRun/3D/N1/frontier\_blosc.sh}
+        or \texttt{sbatch PerformanceRun/BTD/N8/frontier.sh}.
+        Small-$N$ repeats: from \texttt{repeat/...}, submit each script three times.
+  \item From the parent of each \texttt{job\_id/} directory:
         \texttt{python3 scripts/frontier/extract\_time\_3.6.py job\_id}
-        (bare job id, no trailing slash) to obtain TotalTime and IOTime.
-        Option~1 I/O time is $\mathrm{TotalTime}_{\mathrm{I/O}}-\mathrm{TotalTime}_{\mathrm{nullcore}}$
-        when nullcore runs are available; \textbf{DataSize} is the aggregate
-        on-disk output file size observed from each run.
-  \item Aggregate times and sizes into \texttt{results/*.csv}; replot by importing
-        CSVs into Google Sheets and exporting charts.
+        (bare id, no slash) $\rightarrow$ TotalTime, IOTime.
+        Option~1 I/O time is
+        $\mathrm{TotalTime}_{\mathrm{I/O}}-\mathrm{TotalTime}_{\mathrm{nullcore}}$
+        when nullcore runs exist; \textbf{DataSize} is the observed on-disk
+        output size.
+  \item Aggregate into \texttt{results/*.csv}; replot in Google Sheets.
 \end{enumerate}
-Perlmutter uses the same stack and \texttt{inputs\_3d/}; start from the example
-scripts under \texttt{PerformanceRun/} (e.g.\ \texttt{BTD/N8/perlmutter.sh}) and
-adjust account/QOS, modules, and scratch paths.
+Perlmutter: same stack and \texttt{inputs\_3d/}; start from
+\texttt{PerformanceRun/BTD/N8/perlmutter.sh} and adjust account/QOS, modules,
+and scratch.
 
 \artcomp
-Workflow: $T_1$ build/load stack $\rightarrow$ $T_2$ run WarpX configs
-$\rightarrow$ $T_3$ \texttt{extract\_time\_3.6.py} plus observed file sizes into CSV
-$\rightarrow$ $T_4$ Google Sheets tables/figures.
-Parameters of interest: node count (weak scaling), aggregation method,
-\texttt{NumSubFiles}, FlattenSteps on/off, SPAN on/off, AsyncWrite on/off,
-Blosc2 on/off. Selected Frontier configs at $N{=}8$--$32$ were repeated three
-times (\texttt{repeat/}); larger scales and Blosc remain single-trial, with
-reliability argued via cross-scale consistency (paper §3).
+$T_1$ build/load $\rightarrow$ $T_2$ run WarpX $\rightarrow$ $T_3$
+\texttt{extract\_time\_3.6.py} plus file sizes into CSV $\rightarrow$ $T_4$
+Google Sheets. Parameters: node count, aggregation, \texttt{NumSubFiles},
+FlattenSteps, SPAN, AsyncWrite, Blosc2. Frontier $N{=}8$--$32$ configs were
+repeated three times (\texttt{repeat/}); larger scales and Blosc are
+single-trial, with reliability via cross-scale consistency (\S III-C).
 
 \artout
-\begin{itemize}
-  \item CSV tables of aggregate write throughput (TB/s) vs.\ node count, plus
-        small-$N$ repeat summaries (mean$\pm$stdev).
-  \item Plots corresponding to BTD FlattenSteps, SPAN/AsyncWrite, and aggregation
-        studies (recreated from CSVs in Google Sheets).
-  \item Comparison against paper Table~1 and BTD figures: match relative trends;
-        document filesystem contention / re-runs as in the paper Limitations.
-\end{itemize}
-
-\vspace{2ex}
-\noindent\textit{Note:} Artifact Evaluation (AE) appendix intentionally omitted for
-submission. Authors may add AE after acceptance if applying for badges.
+CSV throughput vs.\ nodes plus small-$N$ mean$\pm$stdev; plots of Figs.~2--6
+from those CSVs. Compare to Table~I and Figs.~2--6 on relative trends;
+document filesystem contention as in \S VI-C.
 
 \end{document}

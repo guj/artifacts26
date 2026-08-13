@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Build ADIOS2, openPMD-api, and WarpX on Frontier (OLCF).
+# Build ADIOS2 and WarpX on Frontier (OLCF).
+# openPMD-api comes bundled with WarpX (paper stack: WarpX 25.12, ADIOS2 2.11).
 #
 # Usage:
 #   ./build.setup /lustre/orion/<project>/scratch/<user>/<exp>
@@ -12,11 +13,9 @@
 #   ./build.setup
 #
 # Layout under WORKDIR:
-#   binary/{adios,openPMD-api,warpx}   installs
-#   build/{adios,openPMD,warpx}        build trees
-#   src/{adios,openPMD,warpx}          clones (created in cwd if run from WORKDIR/src)
-#
-# Versions used in the paper: WarpX 25.12, ADIOS2 2.11 (adjust tags below if needed).
+#   binary/{adios,warpx}   installs
+#   build/{adios,warpx}    build trees
+#   src/{adios,warpx}      clones
 
 set -euo pipefail
 
@@ -36,14 +35,10 @@ NPROC="${NPROC:-8}"
 # Paper software targets (override as needed)
 ADIOS2_TAG="${ADIOS2_TAG:-v2.11.0}"
 WARPX_TAG="${WARPX_TAG:-25.12}"
-# openPMD-api: use a recent release compatible with ADIOS2 2.11; override if needed
-OPENPMD_TAG="${OPENPMD_TAG:-0.16.1}"
 
 mkdir -p "${INSTALL_TOP}/binary/adios"
-mkdir -p "${INSTALL_TOP}/binary/openPMD-api"
 mkdir -p "${INSTALL_TOP}/binary/warpx"
 mkdir -p "${INSTALL_TOP}/build/adios"
-mkdir -p "${INSTALL_TOP}/build/openPMD"
 mkdir -p "${INSTALL_TOP}/build/warpx"
 mkdir -p "${INSTALL_TOP}/src"
 cd "${INSTALL_TOP}/src"
@@ -66,6 +61,8 @@ fi
 
 # Optional compression modules on Frontier (uncomment if desired):
 # module load c-blosc zfp sz zstd
+# For Table I Blosc columns, add -DADIOS2_USE_Blosc2=ON (and a c-blosc2 install)
+# to the cmake line below.
 
 cmake -DADIOS2_USE_Fortran=OFF \
       -DCMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -78,41 +75,10 @@ cmake --install build
 
 export ADIOS2_DIR="${INSTALL_TOP}/binary/adios/lib64/cmake/adios2"
 export LD_LIBRARY_PATH="${INSTALL_TOP}/binary/adios/lib64:${LD_LIBRARY_PATH:-}"
+export CMAKE_PREFIX_PATH="${INSTALL_TOP}/binary/adios:${CMAKE_PREFIX_PATH:-}"
 cd "${INSTALL_TOP}/src"
 
-##### openPMD-api #####
-if [ ! -d openPMD/openPMD-api ]; then
-  mkdir -p openPMD
-  cd openPMD
-  ln -sfn "${INSTALL_TOP}/binary/openPMD-api" install
-  ln -sfn "${INSTALL_TOP}/build/openPMD" build
-  git clone https://github.com/openPMD/openPMD-api.git
-  cd openPMD-api
-  git checkout "${OPENPMD_TAG}"
-  cd ..
-else
-  cd openPMD
-fi
-
-cmake -DopenPMD_USE_PYTHON=OFF \
-      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-      -DopenPMD_USE_HDF5=ON \
-      -DCMAKE_INSTALL_PREFIX="${INSTALL_TOP}/binary/openPMD-api" \
-      -B build \
-      -S openPMD-api
-cmake --build build -j "${NPROC}"
-cmake --install build
-
-export OPENPMD_INSTALL_DIR="${INSTALL_TOP}/binary/openPMD-api"
-export openPMD_DIR="${OPENPMD_INSTALL_DIR}/lib64/cmake/openPMD"
-export LD_LIBRARY_PATH="${OPENPMD_INSTALL_DIR}/lib64:${LD_LIBRARY_PATH:-}"
-export PKG_CONFIG_PATH="${OPENPMD_INSTALL_DIR}/lib64/pkgconfig:${PKG_CONFIG_PATH:-}"
-export CMAKE_PREFIX_PATH="${OPENPMD_INSTALL_DIR}:${CMAKE_PREFIX_PATH:-}"
-cd "${INSTALL_TOP}/src"
-
-##### WarpX #####
-# IMPORTANT: with a custom openPMD, keep WarpX_openpmd_internal=OFF so CMake
-# does not download a private copy into _deps/.
+##### WarpX (openPMD-api bundled) #####
 if [ ! -d warpx/WarpX ]; then
   mkdir -p warpx
   cd warpx
@@ -129,7 +95,7 @@ export AMREX_AMD_ARCH=gfx90a
 export MPICH_GPU_SUPPORT_ENABLED=1
 
 cmake -DWarpX_OPENPMD=ON \
-      -DWarpX_openpmd_internal=OFF \
+      -DWarpX_openpmd_internal=ON \
       -DWarpX_DIMS="1;2;3;RZ" \
       -DWarpX_COMPUTE=HIP \
       -DCMAKE_BUILD_TYPE=RelWithDebInfo \
