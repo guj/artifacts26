@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+# Build ADIOS2 and WarpX on Frontier (OLCF).
+# openPMD-api comes bundled with WarpX (paper stack: WarpX 25.12, ADIOS2 2.11).
+#
+# Usage:
+#   ./build.setup /lustre/orion/<project>/scratch/<user>/<exp>
+# Or:
+#   WORKDIR=/lustre/orion/<project>/scratch/<user>/<exp> ./build.setup
+#
+# Prerequisites: source bash.setup.env with the same WORKDIR first, e.g.
+#   export WORKDIR=...
+#   source bash.setup.env
+#   ./build.setup
+#
+# Layout under WORKDIR:
+#   binary/{adios,warpx}   installs
+#   build/{adios,warpx}    build trees
+#   src/{adios,warpx}      clones
+
+set -euo pipefail
+
+if [ -n "${1:-}" ]; then
+  WORKDIR="$1"
+fi
+if [ -z "${WORKDIR:-}" ]; then
+  echo "Usage: WORKDIR=/path/to/workdir $0" >&2
+  echo "   or: $0 /path/to/workdir" >&2
+  exit 1
+fi
+
+export WORKDIR
+export INSTALL_TOP="${WORKDIR}"
+NPROC="${NPROC:-8}"
+
+# Paper software targets (override as needed)
+ADIOS2_TAG="${ADIOS2_TAG:-v2.11.0}"
+WARPX_TAG="${WARPX_TAG:-25.12}"
+
+mkdir -p "${INSTALL_TOP}/binary/adios"
+mkdir -p "${INSTALL_TOP}/binary/warpx"
+mkdir -p "${INSTALL_TOP}/build/adios"
+mkdir -p "${INSTALL_TOP}/build/warpx"
+mkdir -p "${INSTALL_TOP}/src"
+cd "${INSTALL_TOP}/src"
+
+echo "=== Building into WORKDIR=${WORKDIR} ==="
+
+##### ADIOS2 #####
+if [ ! -d adios/ADIOS2 ]; then
+  mkdir -p adios
+  cd adios
+  ln -sfn "${INSTALL_TOP}/binary/adios" install
+  ln -sfn "${INSTALL_TOP}/build/adios" build
+  git clone https://github.com/ornladios/ADIOS2.git
+  cd ADIOS2
+  git checkout "${ADIOS2_TAG}"
+  cd ..
+else
+  cd adios
+fi
+
+# Optional compression modules on Frontier (uncomment if desired):
+# module load c-blosc zfp sz zstd
+# For Table I Blosc columns, add -DADIOS2_USE_Blosc2=ON (and a c-blosc2 install)
+# to the cmake line below.
+
+cmake -DADIOS2_USE_Fortran=OFF \
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+      -DCMAKE_INSTALL_PREFIX="${INSTALL_TOP}/binary/adios" \
+      -DADIOS2_USE_HDF5=OFF \
+      -B build \
+      -S ADIOS2
+cmake --build build -j "${NPROC}"
+cmake --install build
+
+export ADIOS2_DIR="${INSTALL_TOP}/binary/adios/lib64/cmake/adios2"
+export LD_LIBRARY_PATH="${INSTALL_TOP}/binary/adios/lib64:${LD_LIBRARY_PATH:-}"
+export CMAKE_PREFIX_PATH="${INSTALL_TOP}/binary/adios:${CMAKE_PREFIX_PATH:-}"
+cd "${INSTALL_TOP}/src"
+
+##### WarpX (openPMD-api bundled) #####
+if [ ! -d warpx/WarpX ]; then
+  mkdir -p warpx
+  cd warpx
+  ln -sfn "${INSTALL_TOP}/build/warpx" build
+  git clone https://github.com/BLAST-WarpX/warpx.git WarpX
+  cd WarpX
+  git checkout "${WARPX_TAG}"
+  cd ..
+else
+  cd warpx
+fi
+
+export MPICH_GPU_SUPPORT_ENABLED=1
+# necessary to use CUDA-Aware MPI and run a job
+export CRAY_ACCEL_TARGET=nvidia80
+# optimize CUDA compilation for A100
+export AMREX_CUDA_ARCH=8.0
+
+export CXXFLAGS="-march=znver3"
+export CFLAGS="-march=znver3"
+
+# compiler environment hints
+export CC=cc
+export CXX=CC
+export FC=ftn
+export CUDACXX=$(which nvcc)
+export CUDAHOSTCXX=CC
+
+cmake -DWarpX_OPENPMD=ON \
+      -DWarpX_openpmd_internal=ON \
+      -DWarpX_DIMS="1;2;3;RZ" \
+      -DWarpX_COMPUTE=CUDA \
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+      -DCMAKE_INSTALL_PREFIX="${INSTALL_TOP}/binary/warpx" \
+      -B build \
+      -S WarpX
+cmake --build build -j "${NPROC}"
+cmake --install build
+
+echo "=== Build finished ==="
+echo "Install root: ${INSTALL_TOP}/binary"
+echo "Re-source env:  source $(dirname "$0")/bash.setup.env ${WORKDIR}"
