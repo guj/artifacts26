@@ -13,7 +13,6 @@ warpx_tests/
   PerformanceRun/     # job scripts
     3D/               # balanced Cartesian
     BTD/              # boosted-frame back-transformed diagnostics
-    SST_BTD/          # exploratory staging (optional)
 ```
 
 See `../warpx_tests_INDEX.md` for a paper↔directory map.

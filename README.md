@@ -16,6 +16,7 @@ artifacts/
   warpx_tests_INDEX.md      # paper ↔ directory map
   repeat/                   # same runs, organized for ×3 small-N repeats
   scripts/frontier/         # bash.setup.env + build.setup (WORKDIR-based)
+  scripts/perlmutter/       # build.setup (loads NERSC modules; CUDA WarpX)
   results/                  # numerical results underlying tables/figures
   ad/                       # SC26 AD appendix (LaTeX)
 ```
@@ -28,6 +29,7 @@ artifacts/
 | `warpx_tests/PerformanceRun/` | Frontier Slurm scripts (plus some Perlmutter) |
 | `repeat/` | Same style of batch scripts, grouped by config (`bp`, `bp_async`, …); **submit each script 3×** for the paper’s small-N repeats — see `repeat/README.md` |
 | `scripts/frontier/` | Module env + software build into `$WORKDIR` |
+| `scripts/perlmutter/` | NERSC modules + CUDA WarpX/ADIOS2 build into `$WORKDIR` |
 ## Software versions (from paper §III-D)
 
 | Component   | Version |
@@ -43,7 +45,7 @@ ADIOS2 features exercised: `TwoLevelShm`, `EveryoneWritesSerial`, `DataSizeBased
 ## Platforms
 
 - **Primary documented platform: Frontier (ORNL)** — Lustre/ClusterStor ORION; weak scaling up to 2048 nodes. Setup and job scripts in this tree target Frontier.
-- **Perlmutter (NERSC)** — all-flash Lustre scratch; weak scaling up to 512 nodes. Same WarpX → openPMD-api → ADIOS2 stack; example Slurm scripts live under `warpx_tests/PerformanceRun/` (e.g. `BTD/N8/perlmutter.sh`) — adapt modules, account/QOS, and scratch paths as needed.
+- **Perlmutter (NERSC)** — all-flash Lustre scratch; weak scaling up to 512 nodes. Same WarpX → openPMD-api → ADIOS2 stack via `scripts/perlmutter/build.setup` (CUDA). Example Slurm: `warpx_tests/PerformanceRun/BTD/N8/perlmutter.sh`.
 
 Absolute TB/s depends on shared-filesystem load and will differ across platforms and days. Reproducible claims emphasize **relative configuration rankings** and the measurement methodology in the paper.
 
@@ -57,6 +59,16 @@ source bash.setup.env
 ```
 
 Personal scratch paths are removed; pass `WORKDIR` instead. See `scripts/frontier/README.md`.
+
+## Perlmutter build
+
+```bash
+cd scripts/perlmutter
+export WORKDIR=/pscratch/sd/<user>/<exp>
+./build.setup
+```
+
+See `scripts/perlmutter/README.md`.
 
 ## Run after build
 

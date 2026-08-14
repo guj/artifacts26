@@ -21,7 +21,6 @@ warpx_tests/
 | `opmd/regular_h5/` | HDF5 comparison (small-scale) |
 | `opmd/btd_default/`, `btd_joined/` | BTD baseline / joined writes |
 | `opmd/btd_flatten/`, `btd_flatten_joined/` | BTD + FlattenSteps |
-| `opmd/btd_*_sst/`, `PerformanceRun/SST_BTD/` | Exploratory staging (RDMA / SST); not primary figures |
 | `opmdx8/` | Variants with different openPMD/ADIOS settings |
 | `plot/`, `plot/btd/` | Plotting-oriented decks |
 | `frontier_bb/` | Burst-buffer exploratory runs |
@@ -36,9 +35,8 @@ Per-node-count decks follow `input.n${NNODES}` (and `f`/`g` suffixes where used)
 | `3D/N8/*.sh` | Frontier balanced N=8 |
 | `3D/scripts/` | Timer helpers (`writeToFindTime.sh`, …) |
 | `BTD/N8/frontier.sh` | Frontier BTD (primary) |
-| `BTD/N8/perlmutter.sh` | Example Perlmutter BTD script (adapt for other scales) |
+| `BTD/N8/perlmutter.sh` | Perlmutter BTD example; build with `scripts/perlmutter/build.setup` |
 | `BTD/N8/N8/bp/`, `.../h5/` | BP vs HDF5 BTD checks |
-| `SST_BTD/` | Staging alternatives (secondary) |
 
 Scripts resolve inputs relatively, e.g.:
 

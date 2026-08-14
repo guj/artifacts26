@@ -1,16 +1,12 @@
 #!/usr/bin/env bash
-# Build ADIOS2 and WarpX on Frontier (OLCF).
+# Build ADIOS2 and WarpX on Perlmutter (NERSC).
 # openPMD-api comes bundled with WarpX (paper stack: WarpX 25.12, ADIOS2 2.11).
+# This script loads NERSC GPU modules itself (no separate bash.setup.env).
 #
 # Usage:
-#   ./build.setup /lustre/orion/<project>/scratch/<user>/<exp>
+#   ./build.setup /pscratch/sd/<user>/<exp>
 # Or:
-#   WORKDIR=/lustre/orion/<project>/scratch/<user>/<exp> ./build.setup
-#
-# Prerequisites: source bash.setup.env with the same WORKDIR first, e.g.
-#   export WORKDIR=...
-#   source bash.setup.env
-#   ./build.setup
+#   WORKDIR=/pscratch/sd/<user>/<exp> ./build.setup
 #
 # Layout under WORKDIR:
 #   binary/{adios,warpx}   installs
@@ -68,8 +64,6 @@ else
   cd adios
 fi
 
-# Optional compression modules on Frontier (uncomment if desired):
-# module load c-blosc zfp sz zstd
 # For Table I Blosc columns, add -DADIOS2_USE_Blosc2=ON (and a c-blosc2 install)
 # to the cmake line below.
 
@@ -129,4 +123,4 @@ cmake --install build
 
 echo "=== Build finished ==="
 echo "Install root: ${INSTALL_TOP}/binary"
-echo "Re-source env:  source $(dirname "$0")/bash.setup.env ${WORKDIR}"
+echo "Reload the same modules in job scripts (see this file's module load block)."

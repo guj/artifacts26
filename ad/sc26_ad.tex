@@ -1,16 +1,40 @@
 \documentclass[conference]{IEEEtran}
 
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{booktabs}
 \usepackage{enumitem}
-\usepackage{hyperref}
+\usepackage{xurl}
+\usepackage[hidelinks]{hyperref}
+\usepackage{flushend}
 \usepackage{sc26repro}
 
-\setlist{nosep,leftmargin=*}
-\setlist[description]{nosep,leftmargin=1.6em,font=\normalfont\itshape}
+% IEEE conference \subsection* is italic at body size and blends into the
+% text. Keep numbered I/II/A/B heads in IEEE style; make the AD template's
+% unnumbered workflow heads bold with a small gap above.
+\newcommand{\ADhead}[1]{%
+  \par\vspace{0.75ex}%
+  \noindent{\normalfont\normalsize\bfseries #1}\par
+  \nobreak\vspace{0.3ex}\noindent\ignorespaces}
+\newcommand{\ADpart}[1]{%
+  \par\vspace{0.5ex}%
+  \noindent{\normalfont\normalsize\bfseries #1}\par
+  \nobreak\vspace{0.2ex}\noindent\ignorespaces}
+\renewcommand{\artrel}{\ADhead{Relation To Contributions}}
+\renewcommand{\artexp}{\ADhead{Expected Results}}
+\renewcommand{\arttime}{\ADhead{Expected Reproduction Time (in Minutes)}}
+\renewcommand{\artin}{\ADhead{Artifact Setup (incl. Inputs)}}
+\renewcommand{\artinpart}[1]{\ADpart{#1}}
+\renewcommand{\artcomp}{\ADhead{Artifact Execution}}
+\renewcommand{\artout}{\ADhead{Artifact Analysis (incl. Outputs)}}
+
+\setlist{nosep,leftmargin=1.15em,itemsep=2pt}
+\setlist[description]{nosep,itemsep=3pt,leftmargin=1.7em,font=\normalfont\bfseries}
 
 % Final submission: do NOT enable explanation/example tags.
 % \usetag{explanation}
@@ -52,14 +76,14 @@ Appendix: Artifact Description\\
 
 \begin{description}
 \item[$A_1$] \url{https://github.com/guj/artifacts26} ---
-  Frontier build/env scripts, WarpX inputs, PerformanceRun and \texttt{repeat/}
-  jobs, log timer extractor, and result CSVs.
+  Frontier and Perlmutter build scripts, WarpX inputs, PerformanceRun and
+  \texttt{repeat/} jobs, log timer extractor, and result CSVs.
   (Optional Zenodo DOI may be added after acceptance.)
 \end{description}
 
 \begin{center}
 \small
-\begin{tabular}{@{}c@{\hspace{0.6em}}c@{\hspace{0.6em}}p{0.55\columnwidth}@{}}
+\begin{tabular}{@{}llp{0.48\columnwidth}@{}}
 \toprule
 Art. & Contrib. & Related paper elements \\
 \midrule
@@ -113,9 +137,8 @@ of the WarpX~$\rightarrow$~openPMD-api~$\rightarrow$~ADIOS2 write path.
         target Frontier.
   \item Perlmutter (NERSC): GPU nodes; all-flash Lustre ($>$5~TB/s); weak scaling
         to 512 nodes (scratch-quota limited); 4 CPU cores/node for I/O.
-        Same WarpX~$\rightarrow$~openPMD-api~$\rightarrow$~ADIOS2 stack; only
-        modules, account/QOS, and scratch paths differ.
-        Example: \texttt{warpx\_tests/PerformanceRun/BTD/N8/perlmutter.sh}.
+        Same stack via \path{scripts/perlmutter/build.setup} (CUDA).
+        Example job: \path{warpx_tests/PerformanceRun/BTD/N8/perlmutter.sh}.
 \end{itemize}
 Node-local NVMe burst buffers were explored for BTD staging but are not required
 to regenerate the primary CSV/plot artifacts.
@@ -126,14 +149,17 @@ to regenerate the primary CSV/plot artifacts.
   \item openPMD-api bundled with that WarpX build
         (\url{https://github.com/openPMD/openPMD-api})
   \item ADIOS2 2.11, BPFile / BP5 (\url{https://github.com/ornladios/ADIOS2})
-  \item Frontier modules (\texttt{scripts/frontier/bash.setup.env}):
+  \item Frontier modules (\path{scripts/frontier/bash.setup.env}):
         \texttt{cmake/3.30.5}, \texttt{craype-accel-amd-gfx90a}, \texttt{rocm},
         \texttt{cray-mpich/8.1.31}, \texttt{cce/18.0.1}, \texttt{hdf5/1.14.5-mpi}
         (optional \texttt{ccache}, \texttt{ninja})
+  \item Perlmutter modules (\path{scripts/perlmutter/build.setup}):
+        \texttt{PrgEnv-gnu}, \texttt{craype-accel-nvidia80}, \texttt{cudatoolkit},
+        \texttt{gcc-native/13.2}, \texttt{cmake/3.30.2}
   \item Lossless Blosc2 via ADIOS2 (\texttt{zstd} level~1, bit-shuffle,
         2048-byte threshold, 6 threads/rank)
-  \item Python~3.6+ for \texttt{scripts/frontier/extract\_time\_3.6.py};
-        Google Sheets to import \texttt{results/*.csv} (no matplotlib drivers)
+  \item Python~3.6+ for \path{scripts/frontier/extract_time_3.6.py};
+        Google Sheets to import \path{results/*.csv} (no matplotlib drivers)
 \end{itemize}
 
 \artinpart{Datasets / Inputs}
@@ -144,64 +170,75 @@ Scripts under \texttt{repeat/} resolve \texttt{EXE}, \texttt{bpls}, and
 \texttt{inputs\_3d} relative to \texttt{warpx\_tests/} (set
 \texttt{\#SBATCH -A YOUR\_PROJECT}).
 \begin{itemize}
-  \item \texttt{inputs\_3d/opmd/regular/}, \texttt{regular\_blosc/},
+  \item \path{inputs_3d/opmd/regular/}, \texttt{regular\_blosc/},
         \texttt{regular\_h5/}: 3D Cartesian LWFA
         ($\approx$33M cells/node; $\approx$2.5~GB/node/step).
-  \item \texttt{inputs\_3d/opmd/btd\_*/}, \texttt{btd\_flatten*/}: BTD
+  \item \path{inputs_3d/opmd/btd_*}, \texttt{btd\_flatten*}: BTD
         (skew + out-of-order; FlattenSteps variants).
-  \item \texttt{PerformanceRun/3D/}, \texttt{PerformanceRun/BTD/}: Frontier
-        jobs (plus \texttt{BTD/.../perlmutter.sh});
-        \texttt{SST\_BTD/} is exploratory.
+  \item \path{PerformanceRun/3D/}, \path{PerformanceRun/BTD/}: Frontier
+        jobs (plus \path{BTD/.../perlmutter.sh}).
   \item \texttt{repeat/}: same pattern, by config
         (\texttt{bp/}, \texttt{bp\_async/}, \texttt{bp\_flatten/}, \texttt{h5/});
         submit each script three times for $N{=}8$--$32$
-        (\texttt{repeat/README.md}).
+        (\path{repeat/README.md}).
 \end{itemize}
-Paper numbers are in \texttt{results/}:
-\texttt{frontier\_3d\_throughput.csv} (Table~I);
-\texttt{3D-perlmutter.csv} (Fig.~2);
-\texttt{fig\_btd\_a\_flatten\_frontier.csv} (Fig.~3);
-\texttt{fig\_btd\_b\_span\_async\_frontier.csv} (Fig.~4);
-\texttt{fig\_btd\_c\_agg\_perlmutter.csv} (Fig.~5);
-\texttt{fig\_btd\_d\_subfiles\_perlmutter.csv} (Fig.~6);
-\texttt{repeat\_runs\_raw.csv}, \texttt{repeat\_summary.csv}
-(mean$\pm$stdev). See \texttt{warpx\_tests\_INDEX.md},
-\texttt{repeat/README.md}, \texttt{results/README.md}.
+
+\noindent Paper numbers are in \texttt{results/}:
+{\small
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+File & Paper \\
+\midrule
+\path{frontier_3d_throughput.csv} & Table~I \\
+\path{3D-perlmutter.csv} & Fig.~2 \\
+\path{fig_btd_a_flatten_frontier.csv} & Fig.~3 \\
+\path{fig_btd_b_span_async_frontier.csv} & Fig.~4 \\
+\path{fig_btd_c_agg_perlmutter.csv} & Fig.~5 \\
+\path{fig_btd_d_subfiles_perlmutter.csv} & Fig.~6 \\
+\path{repeat_runs_raw.csv}, \path{repeat_summary.csv} & mean$\pm$stdev \\
+\bottomrule
+\end{tabular}
+\end{center}
+}
+See \path{warpx_tests_INDEX.md}, \path{repeat/README.md}, \path{results/README.md}.
 
 \artinpart{Installation and Deployment}
-Frontier is the documented host. Choose scratch \texttt{WORKDIR} (no hard-coded
-user path) and run:
+Same tags on both sites (ADIOS2~2.11, WarpX~25.12, bundled openPMD-api,
+\texttt{WarpX\_openpmd\_internal=ON}; override with \texttt{ADIOS2\_TAG},
+\texttt{WARPX\_TAG}). Choose scratch \texttt{WORKDIR} (no hard-coded user path).
+\begin{itemize}
+  \item \textbf{Frontier (HIP):}\\
+        \texttt{export WORKDIR=}\\
+        \path{/lustre/orion/<project>/scratch/<user>/<exp>}\\
+        \texttt{source scripts/frontier/bash.setup.env}\\
+        \texttt{./scripts/frontier/build.setup}\\
+        then e.g.\ \texttt{sbatch} \path{PerformanceRun/3D/N1/frontier_blosc.sh}
+        or \texttt{sbatch} \path{PerformanceRun/BTD/N8/frontier.sh}.
+  \item \textbf{Perlmutter (CUDA):}\\
+        \texttt{export WORKDIR=}\\
+        \path{/pscratch/sd/<user>/<exp>}\\
+        \texttt{./scripts/perlmutter/build.setup} (loads NERSC modules)\\
+        then e.g.\ \texttt{sbatch} \path{PerformanceRun/BTD/N8/perlmutter.sh}.
+\end{itemize}
+Then, on either host:
 \begin{enumerate}
-  \item \texttt{export WORKDIR=}\\
-        \texttt{/lustre/orion/<project>/scratch/<user>/<exp>}
-  \item \texttt{source scripts/frontier/bash.setup.env}
-        (modules; \texttt{ADIOS2\_DIR}; \texttt{AMREX\_AMD\_ARCH=gfx90a};
-        GPU-aware MPI).
-  \item \texttt{./scripts/frontier/build.setup} builds ADIOS2~2.11 and
-        WarpX~25.12 under \texttt{\$WORKDIR/binary/} with bundled openPMD-api
-        (\texttt{WarpX\_openpmd\_internal=ON}).
-        Override with \texttt{ADIOS2\_TAG}, \texttt{WARPX\_TAG}.
   \item In \texttt{warpx\_tests/}, symlink \texttt{EXE} $\rightarrow$ WarpX and
         \texttt{bpls} $\rightarrow$ ADIOS2 \texttt{bpls}; set \texttt{\#SBATCH -A}.
-  \item Submit, e.g.\ \texttt{sbatch PerformanceRun/3D/N1/frontier\_blosc.sh}
-        or \texttt{sbatch PerformanceRun/BTD/N8/frontier.sh}.
         Small-$N$ repeats: from \texttt{repeat/...}, submit each script three times.
   \item From the parent of each \texttt{job\_id/} directory:
-        \texttt{python3 scripts/frontier/extract\_time\_3.6.py job\_id}
+        \path{python3 scripts/frontier/extract_time_3.6.py job_id}
         (bare id, no slash) $\rightarrow$ TotalTime, IOTime.
         Option~1 I/O time is
         $\mathrm{TotalTime}_{\mathrm{I/O}}-\mathrm{TotalTime}_{\mathrm{nullcore}}$
         when nullcore runs exist; \textbf{DataSize} is the observed on-disk
         output size.
-  \item Aggregate into \texttt{results/*.csv}; replot in Google Sheets.
+  \item Aggregate into \path{results/*.csv}; replot in Google Sheets.
 \end{enumerate}
-Perlmutter: same stack and \texttt{inputs\_3d/}; start from
-\texttt{PerformanceRun/BTD/N8/perlmutter.sh} and adjust account/QOS, modules,
-and scratch.
 
 \artcomp
 $T_1$ build/load $\rightarrow$ $T_2$ run WarpX $\rightarrow$ $T_3$
-\texttt{extract\_time\_3.6.py} plus file sizes into CSV $\rightarrow$ $T_4$
+\path{extract_time_3.6.py} plus file sizes into CSV $\rightarrow$ $T_4$
 Google Sheets. Parameters: node count, aggregation, \texttt{NumSubFiles},
 FlattenSteps, SPAN, AsyncWrite, Blosc2. Frontier $N{=}8$--$32$ configs were
 repeated three times (\texttt{repeat/}); larger scales and Blosc are
