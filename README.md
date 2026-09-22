@@ -86,7 +86,7 @@ See `warpx_tests_INDEX.md` for which input dir each paper figure uses.
 
 ## Results CSVs
 
-Filled under `results/` (Table I + Figs. 2–6). See `results/README.md`.
+Filled under `results/` (Table I + Figs. 2–5) and `read_metadata/` (Table II). See `results/README.md`.
 
 - **Logs → times:** from the parent of `job_id/`, run `python3 scripts/frontier/extract_time_3.6.py job_id` (bare id, no `/`).
 - **DataSize:** aggregate output file size observed from each run (on-disk).
@@ -97,10 +97,27 @@ Filled under `results/` (Table I + Figs. 2–6). See `results/README.md`.
 Primary link: https://github.com/guj/artifacts26  
 (recorded as \(A_1\) in `ad/sc26_ad.tex`)
 
+## Compiling the AD PDF
+
+`sc26_ad.tex` uses `fontspec` and requires **XeLaTeX** (or [Tectonic](https://tectonic-typesetting.github.io/), which bundles XeLaTeX and downloads packages on demand):
+
+```bash
+cd ad
+tectonic sc26_ad.tex        # installs missing packages automatically
+```
+
+Or with a full TeX Live / MacTeX installation:
+
+```bash
+cd ad
+xelatex sc26_ad.tex
+xelatex sc26_ad.tex         # second pass for cross-references
+```
+
 ## What to drop in next
 
 1. Push this `artifacts/` tree contents to that repo (if not already)
-2. Compile AD: `cd ad && pdflatex sc26_ad.tex` and upload the PDF
+2. Compile AD (see above) and upload the PDF
 
 ## AD vs AE
 
