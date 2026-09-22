@@ -66,7 +66,7 @@ Appendix: Artifact Description\\
 \item[$C_2$] ADIOS2 aggregation (\texttt{TwoLevelShm}, \texttt{EveryoneWritesSerial},
   \texttt{DataSizeBased}) under extreme writer-side skew.
 \item[$C_3$] \texttt{FlattenSteps} for lab-frame BTD snapshots from non-contiguous
-  boosted-frame data at negligible write-time overhead.
+  boosted-frame data at negligible write- and read-side overhead.
 \item[$C_4$] \texttt{SPAN} and \texttt{AsyncWrite} for buffering and compute/I/O
   overlap under BTD imbalance.
 \item[$C_5$] Practical ADIOS2 configuration guidelines for WarpX-like PIC codes.
@@ -88,7 +88,7 @@ Appendix: Artifact Description\\
 Art. & Contrib. & Related paper elements \\
 \midrule
 $A_1$ & $C_1$--$C_5$ &
-  Table~I; Fig.~2 (Perlmutter 3D); Figs.~3--6 (BTD);
+  Table~I; Table~II; Fig.~2 (Perlmutter 3D); Figs.~3--5 (BTD);
   small-$N$ mean$\pm$stdev (\S II-B, \S III-C, \S IV-B);
   \S VI-B recommendations \\
 \bottomrule
@@ -103,7 +103,8 @@ $A_1$ & $C_1$--$C_5$ &
 
 \artrel
 $A_1$ packages inputs, ADIOS2 parameterizations, \texttt{repeat/} scripts,
-the log timer extractor, and CSVs for Table~I and Figs.~2--6.
+the log timer extractor, CSVs for Table~I and Figs.~2--5, and
+\texttt{bpls~-l} timing scripts and output for Table~II.
 It supports replotting from CSVs and, where allocations permit, re-execution
 of the WarpX~$\rightarrow$~openPMD-api~$\rightarrow$~ADIOS2 write path.
 
@@ -112,7 +113,8 @@ of the WarpX~$\rightarrow$~openPMD-api~$\rightarrow$~ADIOS2 write path.
   \item Table~I (Frontier 3D; EWS/TLS $\pm$ Blosc2): relative ordering is the
         primary claim; absolute TB/s varies with Lustre contention.
   \item Fig.~2 (Perlmutter 3D): TLS above EWS; aggregate $>$1~TB/s at 512 nodes.
-  \item BTD: \texttt{FlattenSteps} overhead negligible vs.\ EWS;
+  \item BTD: \texttt{FlattenSteps} write- and read-side overhead negligible
+        (Table~II: \texttt{bpls~-l} $\approx$0.12~s for both configs at all scales);
         \texttt{SPAN}+\texttt{AsyncWrite} highest among tested configs;
         \texttt{DataSizeBased} preferred when subfile count is constrained under skew.
 \end{itemize}
@@ -181,6 +183,10 @@ Scripts under \texttt{repeat/} resolve \texttt{EXE}, \texttt{bpls}, and
         (\texttt{bp/}, \texttt{bp\_async/}, \texttt{bp\_flatten/}, \texttt{h5/});
         submit each script three times for $N{=}8$--$32$
         (\path{repeat/README.md}).
+  \item \path{read_metadata/}: \texttt{browse\_flatten.sh} and
+        \texttt{browse\_default.sh} run \texttt{bpls~-l} 3$\times$ per snapshot
+        on a login node; \texttt{out\_flatten} and \texttt{out\_default} contain
+        raw timing output (36 trials each); \texttt{analyze.py} reproduces Table~II.
 \end{itemize}
 
 \noindent Paper numbers are in \texttt{results/}:
@@ -192,11 +198,11 @@ File & Paper \\
 \midrule
 \path{frontier_3d_throughput.csv} & Table~I \\
 \path{3D-perlmutter.csv} & Fig.~2 \\
-\path{fig_btd_a_flatten_frontier.csv} & Fig.~3 \\
-\path{fig_btd_b_span_async_frontier.csv} & Fig.~4 \\
-\path{fig_btd_c_agg_perlmutter.csv} & Fig.~5 \\
-\path{fig_btd_d_subfiles_perlmutter.csv} & Fig.~6 \\
+\path{fig_btd_b_span_async_frontier.csv} & Fig.~3 \\
+\path{fig_btd_c_agg_perlmutter.csv} & Fig.~4 \\
+\path{fig_btd_d_subfiles_perlmutter.csv} & Fig.~5 \\
 \path{repeat_runs_raw.csv}, \path{repeat_summary.csv} & mean$\pm$stdev \\
+\path{read_metadata/} & Table~II \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -245,8 +251,9 @@ repeated three times (\texttt{repeat/}); larger scales and Blosc are
 single-trial, with reliability via cross-scale consistency (\S III-C).
 
 \artout
-CSV throughput vs.\ nodes plus small-$N$ mean$\pm$stdev; plots of Figs.~2--6
-from those CSVs. Compare to Table~I and Figs.~2--6 on relative trends;
+CSV throughput vs.\ nodes plus small-$N$ mean$\pm$stdev; plots of Figs.~2--5
+from those CSVs; \texttt{bpls~-l} timings for Table~II.
+Compare to Table~I, Table~II, and Figs.~2--5 on relative trends;
 document filesystem contention as in \S VI-C.
 
 \end{document}
