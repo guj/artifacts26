@@ -66,7 +66,7 @@ Appendix: Artifact Description\\
 \item[$C_2$] ADIOS2 aggregation (\texttt{TwoLevelShm}, \texttt{EveryoneWritesSerial},
   \texttt{DataSizeBased}) under extreme writer-side skew.
 \item[$C_3$] \texttt{FlattenSteps} for lab-frame BTD snapshots from non-contiguous
-  boosted-frame data at negligible write- and read-side overhead.
+  boosted-frame data at negligible write-time and reader-side metadata-stitching overhead.
 \item[$C_4$] \texttt{SPAN} and \texttt{AsyncWrite} for buffering and compute/I/O
   overlap under BTD imbalance.
 \item[$C_5$] Practical ADIOS2 configuration guidelines for WarpX-like PIC codes.
@@ -113,7 +113,7 @@ of the WarpX~$\rightarrow$~openPMD-api~$\rightarrow$~ADIOS2 write path.
   \item Table~I (Frontier 3D; EWS/TLS $\pm$ Blosc2): relative ordering is the
         primary claim; absolute TB/s varies with Lustre contention.
   \item Fig.~2 (Perlmutter 3D): TLS above EWS; aggregate $>$1~TB/s at 512 nodes.
-  \item BTD: \texttt{FlattenSteps} write- and read-side overhead negligible
+  \item BTD: \texttt{FlattenSteps} write-time and reader-side metadata-stitching overhead negligible
         (Table~II: \texttt{bpls~-l} $\approx$0.12~s for both configs at all scales);
         \texttt{SPAN}+\texttt{AsyncWrite} highest among tested configs;
         \texttt{DataSizeBased} preferred when subfile count is constrained under skew.
@@ -213,33 +213,27 @@ See \path{warpx_tests_INDEX.md}, \path{repeat/README.md}, \path{results/README.m
 Same tags on both sites (ADIOS2~2.11, WarpX~25.12, bundled openPMD-api,
 \texttt{WarpX\_openpmd\_internal=ON}; override with \texttt{ADIOS2\_TAG},
 \texttt{WARPX\_TAG}). Choose scratch \texttt{WORKDIR} (no hard-coded user path).
-\begin{itemize}
-  \item \textbf{Frontier (HIP):}\\
-        \texttt{export WORKDIR=}\\
-        \path{/lustre/orion/<project>/scratch/<user>/<exp>}\\
-        \texttt{source scripts/frontier/bash.setup.env}\\
-        \texttt{./scripts/frontier/build.setup}\\
-        then e.g.\ \texttt{sbatch} \path{PerformanceRun/3D/N1/frontier_blosc.sh}
-        or \texttt{sbatch} \path{PerformanceRun/BTD/N8/frontier.sh}.
-  \item \textbf{Perlmutter (CUDA):}\\
-        \texttt{export WORKDIR=}\\
-        \path{/pscratch/sd/<user>/<exp>}\\
-        \texttt{./scripts/perlmutter/build.setup} (loads NERSC modules)\\
-        then e.g.\ \texttt{sbatch} \path{PerformanceRun/BTD/N8/perlmutter.sh}.
-\end{itemize}
-Then, on either host:
 \begin{enumerate}
-  \item In \texttt{warpx\_tests/}, symlink \texttt{EXE} $\rightarrow$ WarpX and
-        \texttt{bpls} $\rightarrow$ ADIOS2 \texttt{bpls}; set \texttt{\#SBATCH -A}.
-        Small-$N$ repeats: from \texttt{repeat/...}, submit each script three times.
-  \item From the parent of each \texttt{job\_id/} directory:
-        \path{python3 scripts/frontier/extract_time_3.6.py job_id}
-        (bare id, no slash) $\rightarrow$ TotalTime, IOTime.
-        Option~1 I/O time is
-        $\mathrm{TotalTime}_{\mathrm{I/O}}-\mathrm{TotalTime}_{\mathrm{nullcore}}$
-        when nullcore runs exist; \textbf{DataSize} is the observed on-disk
-        output size.
-  \item Aggregate into \path{results/*.csv}; replot in Google Sheets.
+  \item \textbf{Build.}
+    Frontier (HIP): \texttt{export WORKDIR=\path{/lustre/orion/<proj>/scratch/<u>/<exp>}};
+    \texttt{source scripts/frontier/bash.setup.env};
+    \texttt{./scripts/frontier/build.setup}.
+    Perlmutter (CUDA): \texttt{export WORKDIR=\path{/pscratch/sd/<u>/<exp>}};
+    \texttt{./scripts/perlmutter/build.setup} (loads NERSC modules).
+  \item \textbf{Point and submit.}
+    In \texttt{warpx\_tests/}, symlink \texttt{EXE} $\rightarrow$ WarpX and
+    \texttt{bpls} $\rightarrow$ ADIOS2 \texttt{bpls}; set \texttt{\#SBATCH~-A}.
+    Submit job scripts under \texttt{PerformanceRun/} (scale-out) or
+    \texttt{repeat/} (3$\times$ small-$N$ repeats).
+  \item \textbf{Extract.}
+    From the parent of each \texttt{job\_id/}:
+    \path{python3 scripts/frontier/extract_time_3.6.py job_id}
+    $\rightarrow$ TotalTime, IOTime.
+    Option~1 I/O time:
+    $\mathrm{TotalTime}_{\mathrm{I/O}}-\mathrm{TotalTime}_{\mathrm{nullcore}}$
+    when nullcore runs exist; \textbf{DataSize} is the on-disk output size.
+  \item \textbf{Aggregate.}
+    Write times and sizes into \path{results/*.csv}; replot in Google Sheets.
 \end{enumerate}
 
 \artcomp
